@@ -1,4 +1,5 @@
-Simple Banking System in Java
+#**Simple Banking System in Java**
+
 This is a basic banking application implemented in Java. The project is currently at an early stage and serves as a foundation for future improvements. It simulates simple banking operations using .txt files for data storage, with plans to enhance the system significantly over time.
 
 Features
