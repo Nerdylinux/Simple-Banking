@@ -46,7 +46,9 @@ public class App {
                                 JOptionPane.ERROR_MESSAGE
                             );
                         }
-                    } while (accNo == null || !accNo.matches("\\d{10}"));
+                    } while (
+                        accNo != null && accNo.matches("\\d{10}") == false
+                    );
                 } else {
                     System.exit(0);
                 }
