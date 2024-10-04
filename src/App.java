@@ -104,11 +104,8 @@ public class App {
                 }
             }
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(
-                null,
-                "An unexpected error occurred: " + e.getMessage(),
-                "Error",
-                JOptionPane.ERROR_MESSAGE
+            System.out.println(
+                "An unexpected error occurred: " + e.getMessage()
             );
             e.printStackTrace();
         }
@@ -195,12 +192,7 @@ public class App {
                 }
             }
         } catch (IOException e) {
-            JOptionPane.showMessageDialog(
-                null,
-                "Error reading account list: " + e.getMessage(),
-                "File Error",
-                JOptionPane.ERROR_MESSAGE
-            );
+            System.out.println("Unexpected error occured :" + e.getMessage());
         }
         return String.format("%010d", lastNumber + 1);
     }
@@ -329,7 +321,6 @@ public class App {
         int upperCount = 0;
         int specialCount = 0;
         int spaceCount = 0;
-        String final_password = "";
         char ch;
 
         do {
@@ -362,33 +353,28 @@ public class App {
                 lenghtCount >= MIN_LENGTH &&
                 lenghtCount <= MAX_LENGTH &&
                 spaceCount == SPACE_ERROR
-            ) final_password = passcode;
-            else {
-                if (
-                    upperCount != NO_OF_UPPERCASE
-                ) JOptionPane.showMessageDialog(
+            ) {
+                break;
+            } else {
+                if (upperCount < NO_OF_UPPERCASE) JOptionPane.showMessageDialog(
                     null,
                     "Password needs to have atleast 1 Uppercase Letter",
                     "Input Error",
                     JOptionPane.ERROR_MESSAGE
                 );
-                if (
-                    lowerCount != NO_OF_LOWERCASE
-                ) JOptionPane.showMessageDialog(
+                if (lowerCount < NO_OF_LOWERCASE) JOptionPane.showMessageDialog(
                     null,
                     "Password needs to have atleast 1 Lowercase Letter",
                     "Input Error",
                     JOptionPane.ERROR_MESSAGE
                 );
-                if (digitCount != NO_OF_DIGITS) JOptionPane.showMessageDialog(
+                if (digitCount < NO_OF_DIGITS) JOptionPane.showMessageDialog(
                     null,
                     "Password needs to have atleast 1 Number",
                     "Input Error",
                     JOptionPane.ERROR_MESSAGE
                 );
-                if (
-                    specialCount != NO_OF_SPECIAL
-                ) JOptionPane.showMessageDialog(
+                if (specialCount < NO_OF_SPECIAL) JOptionPane.showMessageDialog(
                     null,
                     "Password needs to have atleast 1 Special Character (e.g.- @ , - , _ , etc)",
                     "Input Error",
@@ -410,15 +396,15 @@ public class App {
                 );
             }
         } while (
-            upperCount != NO_OF_UPPERCASE ||
-            lowerCount != NO_OF_LOWERCASE ||
-            digitCount != NO_OF_DIGITS ||
-            specialCount != NO_OF_SPECIAL ||
+            upperCount < NO_OF_UPPERCASE ||
+            lowerCount < NO_OF_LOWERCASE ||
+            digitCount < NO_OF_DIGITS ||
+            specialCount < NO_OF_SPECIAL ||
             lenghtCount < MIN_LENGTH ||
             lenghtCount > MAX_LENGTH ||
             spaceCount != SPACE_ERROR
         );
 
-        return final_password;
+        return passcode;
     }
 }
