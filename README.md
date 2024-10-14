@@ -18,11 +18,7 @@ that are planned ahead. Some of them are :-
 
 ### 1. Password System
 
-Implement a secure password system to protect user accounts and transactions.
-This will include :-
-
-1) User authentication during login
-2) Encrytion for password storage
+Completed ! :)
 
 ### 2. Currency Verification System
 
