@@ -3,6 +3,8 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import javax.swing.JOptionPane;
 
 public class App {
@@ -128,34 +130,42 @@ public class App {
             String savingsLine;
             String passwordLine;
             String passwordEntry;
-            while (
-                (accountLine = accountReader.readLine()) != null &&
-                (savingsLine = savingsReader.readLine()) != null &&
-                (passwordLine = passwordReader.readLine()) != null
-            ) {
-                if (accountLine.equals(accountNumber)) {
-                    for (int attempts = 3; attempts > 0; attempts--) {
-                        passwordEntry = JOptionPane.showInputDialog(
-                            "Enter Your Password (Attempts left: " +
-                            attempts +
-                            "):"
-                        );
-                        if (passwordEntry == null) {
-                            return;
-                        }
-                        if (passwordLine.equals(passwordEntry)) {
-                            savings = savingsLine;
-                            break;
-                        } else {
-                            JOptionPane.showMessageDialog(
-                                null,
-                                "Wrong Password! Please try again.",
-                                "Error",
-                                JOptionPane.ERROR_MESSAGE
+            try {
+                while (
+                    (accountLine = accountReader.readLine()) != null &&
+                    (savingsLine = savingsReader.readLine()) != null &&
+                    (passwordLine = passwordReader.readLine()) != null
+                ) {
+                    if (accountLine.equals(accountNumber)) {
+                        for (int attempts = 3; attempts > 0; attempts--) {
+                            passwordEntry = JOptionPane.showInputDialog(
+                                "Enter Your Password (Attempts left: " +
+                                attempts +
+                                "):"
                             );
+                            if (passwordEntry == null) {
+                                return;
+                            }
+                            if (
+                                passwordLine.equals(
+                                    passwordEncrpyter(passwordEntry)
+                                )
+                            ) {
+                                savings = savingsLine;
+                                break;
+                            } else {
+                                JOptionPane.showMessageDialog(
+                                    null,
+                                    "Wrong Password! Please try again.",
+                                    "Error",
+                                    JOptionPane.ERROR_MESSAGE
+                                );
+                            }
                         }
                     }
                 }
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         }
 
@@ -242,7 +252,12 @@ public class App {
             }
         } while (name == null || name.trim().isEmpty());
 
-        String passWord = passwordValidator();
+        String passString = "";
+        try {
+            passString = passwordEncrpyter(passwordValidator());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         String dob = JOptionPane.showInputDialog(
             "Enter your Date of Birth [DD/MM/YYYY]"
@@ -302,7 +317,7 @@ public class App {
             dobp.println(dob);
             addressp.println(address);
             savingp.println(saving);
-            passwordp.println(passWord);
+            passwordp.println(passString);
         }
     }
 
@@ -406,5 +421,21 @@ public class App {
         );
 
         return passcode;
+    }
+
+    static String passwordEncrpyter(String s) throws Exception {
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            byte[] encodedHash = digest.digest(s.getBytes());
+            StringBuilder hexString = new StringBuilder();
+            for (byte b : encodedHash) {
+                String hex = Integer.toHexString(0xff & b);
+                if (hex.length() == 1) hexString.append('0');
+                hexString.append(hex);
+            }
+            return hexString.toString();
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
