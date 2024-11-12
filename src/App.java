@@ -3,6 +3,8 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import javax.swing.JOptionPane;
 
 public class App {
@@ -104,11 +106,8 @@ public class App {
                 }
             }
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(
-                null,
-                "An unexpected error occurred: " + e.getMessage(),
-                "Error",
-                JOptionPane.ERROR_MESSAGE
+            System.out.println(
+                "An unexpected error occurred: " + e.getMessage()
             );
             e.printStackTrace();
         }
@@ -122,18 +121,51 @@ public class App {
             );
             BufferedReader savingsReader = new BufferedReader(
                 new FileReader("lib/savingsList.txt")
-            )
+            );
+            BufferedReader passwordReader = new BufferedReader(
+                new FileReader("lib/Passwords.txt")
+            );
         ) {
             String accountLine;
             String savingsLine;
-            while (
-                (accountLine = accountReader.readLine()) != null &&
-                (savingsLine = savingsReader.readLine()) != null
-            ) {
-                if (accountLine.equals(accountNumber)) {
-                    savings = savingsLine;
-                    break;
+            String passwordLine;
+            String passwordEntry;
+            try {
+                while (
+                    (accountLine = accountReader.readLine()) != null &&
+                    (savingsLine = savingsReader.readLine()) != null &&
+                    (passwordLine = passwordReader.readLine()) != null
+                ) {
+                    if (accountLine.equals(accountNumber)) {
+                        for (int attempts = 3; attempts > 0; attempts--) {
+                            passwordEntry = JOptionPane.showInputDialog(
+                                "Enter Your Password (Attempts left: " +
+                                attempts +
+                                "):"
+                            );
+                            if (passwordEntry == null) {
+                                return;
+                            }
+                            if (
+                                passwordLine.equals(
+                                    passwordEncrpyter(passwordEntry)
+                                )
+                            ) {
+                                savings = savingsLine;
+                                break;
+                            } else {
+                                JOptionPane.showMessageDialog(
+                                    null,
+                                    "Wrong Password! Please try again.",
+                                    "Error",
+                                    JOptionPane.ERROR_MESSAGE
+                                );
+                            }
+                        }
+                    }
                 }
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         }
 
@@ -170,12 +202,7 @@ public class App {
                 }
             }
         } catch (IOException e) {
-            JOptionPane.showMessageDialog(
-                null,
-                "Error reading account list: " + e.getMessage(),
-                "File Error",
-                JOptionPane.ERROR_MESSAGE
-            );
+            System.out.println("Unexpected error occured :" + e.getMessage());
         }
         return String.format("%010d", lastNumber + 1);
     }
@@ -225,6 +252,13 @@ public class App {
             }
         } while (name == null || name.trim().isEmpty());
 
+        String passString = "";
+        try {
+            passString = passwordEncrpyter(passwordValidator());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
         String dob = JOptionPane.showInputDialog(
             "Enter your Date of Birth [DD/MM/YYYY]"
         );
@@ -273,13 +307,135 @@ public class App {
             );
             PrintWriter savingp = new PrintWriter(
                 new FileWriter("lib/savingsList.txt", true)
-            )
+            );
+            PrintWriter passwordp = new PrintWriter(
+                new FileWriter("lib/Passwords.txt", true)
+            );
         ) {
             accp.println(accountNo);
             namep.println(name);
             dobp.println(dob);
             addressp.println(address);
             savingp.println(saving);
+            passwordp.println(passString);
+        }
+    }
+
+    static String passwordValidator() {
+        String passcode;
+        final int NO_OF_UPPERCASE = 1;
+        final int NO_OF_LOWERCASE = 1;
+        final int NO_OF_DIGITS = 1;
+        final int NO_OF_SPECIAL = 1;
+        final int MAX_LENGTH = 30;
+        final int MIN_LENGTH = 8;
+        final int SPACE_ERROR = 0;
+        int lowerCount = 0;
+        int digitCount = 0;
+        int lenghtCount = 0;
+        int upperCount = 0;
+        int specialCount = 0;
+        int spaceCount = 0;
+        char ch;
+
+        do {
+            lowerCount = 0;
+            digitCount = 0;
+            lenghtCount = 0;
+            upperCount = 0;
+            specialCount = 0;
+            spaceCount = 0;
+
+            passcode = JOptionPane.showInputDialog("Enter your new password");
+            passcode = passcode.trim();
+            lenghtCount = passcode.length();
+            for (int i = 0; i < lenghtCount; i++) {
+                ch = passcode.charAt(i);
+                if (Character.isUpperCase(ch)) upperCount++;
+                if (Character.isLowerCase(ch)) lowerCount++;
+                if (Character.isDigit(ch)) digitCount++;
+                if (
+                    !Character.isLetterOrDigit(ch) &&
+                    !Character.isWhitespace(ch)
+                ) specialCount++;
+                if (Character.isWhitespace(ch)) spaceCount++;
+            }
+            if (
+                upperCount == NO_OF_UPPERCASE &&
+                lowerCount == NO_OF_LOWERCASE &&
+                digitCount == NO_OF_DIGITS &&
+                specialCount == NO_OF_SPECIAL &&
+                lenghtCount >= MIN_LENGTH &&
+                lenghtCount <= MAX_LENGTH &&
+                spaceCount == SPACE_ERROR
+            ) {
+                break;
+            } else {
+                if (upperCount < NO_OF_UPPERCASE) JOptionPane.showMessageDialog(
+                    null,
+                    "Password needs to have atleast 1 Uppercase Letter",
+                    "Input Error",
+                    JOptionPane.ERROR_MESSAGE
+                );
+                if (lowerCount < NO_OF_LOWERCASE) JOptionPane.showMessageDialog(
+                    null,
+                    "Password needs to have atleast 1 Lowercase Letter",
+                    "Input Error",
+                    JOptionPane.ERROR_MESSAGE
+                );
+                if (digitCount < NO_OF_DIGITS) JOptionPane.showMessageDialog(
+                    null,
+                    "Password needs to have atleast 1 Number",
+                    "Input Error",
+                    JOptionPane.ERROR_MESSAGE
+                );
+                if (specialCount < NO_OF_SPECIAL) JOptionPane.showMessageDialog(
+                    null,
+                    "Password needs to have atleast 1 Special Character (e.g.- @ , - , _ , etc)",
+                    "Input Error",
+                    JOptionPane.ERROR_MESSAGE
+                );
+                if (
+                    lenghtCount > MAX_LENGTH || lenghtCount < MIN_LENGTH
+                ) JOptionPane.showMessageDialog(
+                    null,
+                    "Password needs to be between 8 to 30 characters",
+                    "Input Error",
+                    JOptionPane.ERROR_MESSAGE
+                );
+                if (spaceCount != SPACE_ERROR) JOptionPane.showMessageDialog(
+                    null,
+                    "Password must not contain any blank spaces",
+                    "Input Error",
+                    JOptionPane.ERROR_MESSAGE
+                );
+            }
+        } while (
+            upperCount < NO_OF_UPPERCASE ||
+            lowerCount < NO_OF_LOWERCASE ||
+            digitCount < NO_OF_DIGITS ||
+            specialCount < NO_OF_SPECIAL ||
+            lenghtCount < MIN_LENGTH ||
+            lenghtCount > MAX_LENGTH ||
+            spaceCount != SPACE_ERROR
+        );
+
+        return passcode;
+    }
+
+    static String passwordEncrpyter(String s) throws Exception {
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            byte[] encodedHash = digest.digest(s.getBytes());
+            StringBuilder hexString = new StringBuilder();
+            for (byte b : encodedHash) {
+                String hex = Integer.toHexString(0xff & b);
+                if (hex.length() == 1) hexString.append('0');
+                hexString.append(hex);
+            }
+            return hexString.toString();
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
         }
     }
 }
